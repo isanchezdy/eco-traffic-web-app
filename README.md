@@ -1,1 +1,2 @@
-# eco-traffic-web-app
+# Eco-Traffic Web APP
+This is a Web APP that can be used to request routes in a map selecting the source and destination points, retrieving the best ones based on distance, travel time and fuel consumption. This explanation will be expanded in future updates.

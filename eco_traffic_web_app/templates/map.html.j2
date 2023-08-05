@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Eco-Traffic Web Map</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('send_library', path='leaflet.css') }}" />
+        <script src="{{ url_for('send_library', path='leaflet-src.js') }}"></script>
+    </head>
+    <body>
+        <!-- Container for the map --> 
+        <div class="mapbox" id="map">
+            <!-- Container for the form --> 
+            <form id="container" action="" method="post" autocomplete="off">
+                <!-- TODO The names of the points are shown after submit --> 
+                <input id="origin" name="origin" type="text" placeholder="Origin" required="required" />
+                <input id="destination" name="destination" type="text" placeholder="Destination" required="required" />
+
+                <!-- Button to stop selecting origin and destination by clicking --> 
+                <button id="stop" type="button">Stop markers</button>
+                <!-- Submit button --> 
+                <input type="submit" value="Create route">
+            </form>
+        </div>
+
+        <!-- Scripts are loaded --> 
+        <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+        <script>
+            // Map is centered towards Cáceres
+            map.setView([39.470221,-6.3854254], 15);
+            // Function for click is added
+            map.on('click', addMarker);
+        </script>
+    </body>
+</html>
