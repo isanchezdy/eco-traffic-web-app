@@ -41,5 +41,5 @@ input[type="submit"], #stop {
 }
 
 img.dest_marker { 
-    filter: hue-rotate(120deg); 
+    filter: hue-rotate(140deg); 
 }

@@ -1,8 +1,44 @@
+// Layer views for the map to choose
+var baselayers = {
+    "OpenStreetMap Style": L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxNativeZoom:25,
+            maxZoom:25
+    }),
+    "Google Maps Style": L.tileLayer(
+        'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            attribution: '&copy; <a href="https://www.google.es/maps">Google Maps</a>',
+            maxNativeZoom:25,
+            maxZoom:25,
+            subdomains:['mt0','mt1','mt2','mt3']
+    }),
+    "Satellite View - Google Maps": L.tileLayer(
+        'http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+            attribution: '&copy; <a href="https://www.google.es/maps">Google Maps</a>',
+            maxNativeZoom:25,
+            maxZoom:25,
+            subdomains:['mt0','mt1','mt2','mt3']
+    }),
+    "Satellite View - Instituto Geográfico Nacional de España": L.tileLayer(
+        "http://www.ign.es/wmts/pnoa-ma?&SERVICE=WMTS&REQUEST=GetTile&LAYER=OI.OrthoimageCoverage&FORMAT=image/jpeg&TILEMATRIXSET=GoogleMapsCompatible&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}", {
+			attribution: "© <a href='http://www.ign.es'>Instituto Geográfico Nacional de España</a>",
+            maxNativeZoom:25,
+            maxZoom:25
+    }),
+};
+
 // This part loads the map
-var map = L.map('map').fitWorld();
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
+var map = L.map('map', {
+	layers:[
+		baselayers["OpenStreetMap Style"],
+	],
+	maxZoom:19,
+	minZoom:7,}
+).fitWorld();
+
+// Adding layer control button to map
+L.control.layers(baselayers, {}).addTo(map);
 
 const markers = []; // Markers for origin and destination points
 var checked; // Flag to know which input was clicked last time
