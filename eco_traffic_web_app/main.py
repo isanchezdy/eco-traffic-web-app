@@ -11,6 +11,7 @@ def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static', 'ico'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
+# Function to retrieve the library as files
 @app.route('/leaflet/<path:path>')
 def send_library(path):
     return send_from_directory('leaflet', path)

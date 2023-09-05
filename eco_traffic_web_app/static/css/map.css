@@ -21,6 +21,37 @@ html, body, #map {
     padding: 1em;
 }
 
+#details {
+    margin-top: 6em;
+    right: 1em;
+    position: absolute;
+    z-index: 314159;
+    display: flex;
+    flex-direction: column;
+    width: 30em;
+    background: rgba(255,255,255,0.9);
+    border-radius: 1em;
+    padding: 1em;
+    font-size: large;
+    text-align: center;
+}
+
+#instructions {
+    margin-top: 25em;
+    left: 5em;
+    position: absolute;
+    z-index: 314159;
+    display: none;
+    width: 40em;
+    height: 40em;
+    background: rgba(255,255,255,0.9);
+    border-radius: 1em;
+    padding: 1em;
+    overflow-y: scroll;
+    scroll-behavior: smooth;
+    text-align: center;
+}
+
 input, #stop {
     padding: 12px 20px;
     margin: 4px 0;
@@ -42,4 +73,49 @@ input[type="submit"], #stop {
 
 img.dest_marker { 
     filter: hue-rotate(140deg); 
+}
+
+.gold {
+    border-radius: 1em;
+    background-color: gold;
+    color: black;
+}
+
+.blue {
+    border-radius: 1em;
+    background-color: blue;
+    color: white;
+}
+
+.green {
+    border-radius: 1em;
+    background-color: green;
+    color: white;
+}
+
+.purple {
+    border-radius: 1em;
+    background-color: purple;
+    color: white;
+}
+
+ol, ul {
+    text-align: left;
+    margin: auto;
+}
+
+ol li {
+    font-size: larger;
+}
+
+.routingServices {
+    display: flex;
+    flex-direction: row;
+    margin: auto;
+    font-size: larger;
+}
+
+input[type="radio"] {
+    margin-left: 1em;
+    margin-right: 0.5em;
 }

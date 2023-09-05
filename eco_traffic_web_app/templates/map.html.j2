@@ -1,36 +1,114 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <title>Eco-Traffic Web Map</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}" />
-        <link rel="stylesheet" href="{{ url_for('send_library', path='leaflet.css') }}" />
-        <script src="{{ url_for('send_library', path='leaflet-src.js') }}"></script>
-    </head>
-    <body>
-        <!-- Container for the map --> 
-        <div class="mapbox" id="map">
-            <!-- Container for the form --> 
-            <form id="container" action="" method="post" autocomplete="off">
-                <!-- TODO The names of the points are shown after submit --> 
-                <input id="origin" name="origin" type="text" placeholder="Origin" required="required" />
-                <input id="destination" name="destination" type="text" placeholder="Destination" required="required" />
 
-                <!-- Button to stop selecting origin and destination by clicking --> 
-                <button id="stop" type="button">Stop markers</button>
-                <!-- Submit button --> 
-                <input type="submit" value="Create route">
-            </form>
-        </div>
+<head>
+    <title>Eco-Traffic Web Map</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('send_library', path='leaflet.css') }}" />
+    <script src="{{ url_for('send_library', path='leaflet-src.js') }}"></script>
+</head>
 
-        <!-- Scripts are loaded --> 
-        <script src="{{ url_for('static', filename='js/map.js') }}"></script>
-        <script>
-            // Map is centered towards Cáceres
-            map.setView([39.470221,-6.3854254], 15);
-            // Function for click is added
-            map.on('click', addMarker);
-        </script>
-    </body>
+<body>
+    <!-- Container for the map -->
+    <div class="mapbox" id="map">
+        <!-- Container for the form -->
+        <form id="container" action="" method="post" autocomplete="off">
+            <!-- Fields for coordinates of the points -->
+            <input list="list1" id="origin" name="origin" type="text" pattern="[+-]?[0-9]+[.][0-9]+[,][+-]?[0-9]+[.][0-9]+" placeholder="Origin" required="required" />
+            <input list="list2" id="destination" name="destination" type="text" pattern="[+-]?[0-9]+[.][0-9]+[,][+-]?[0-9]+[.][0-9]+" placeholder="Destination"
+                required="required" />
+            
+            <!-- The list of options for suggesting directions -->
+            <datalist id="list1"></datalist>
+            <datalist id="list2"></datalist>
+
+            <!-- Selection menu for routing service -->
+            <div class="routingServices"> Routing service: 
+                <input type="radio" id="ors" name="routing" value=1 checked>
+                <label for="ors">opensrouteservice</label><br>
+                <input type="radio" id="gh" name="routing" value=2>
+                <label for="gh">GraphHopper</label><br>
+                <input type="radio" id="osrm" name="routing" value=3>
+                <label for="osrm">OSRM</label> 
+            </div>
+
+            <!-- Button to stop selecting origin and destination by clicking -->
+            <button id="stop" type="button">Stop markers</button>
+            <!-- Submit button -->
+            <input type="submit" value="Create route">
+        </form>
+
+        {# When the page reloads after a submit, the details of the routes are shown #}
+        {% if graph_routes %}
+            <div id="details">
+                {# For each route #}
+                {% for g in graph_routes %}
+                    {% if g['tags']|length < 3 %}
+                        {# Show optimized properties only when there is more than one route #}
+                        <h1 onclick="showInstructions({{ loop.index0 }})" class="{{ g['color'] }}"> 
+                            {{ g['tags'] | join(' and ') | replace("distance", "Shortest") | replace("time", "Fastest") | replace("consumption", "Eco-route") }} 
+                        </h1>
+                    {% else %}
+                        <h1 onclick="showInstructions({{ loop.index0 }})" class="purple"> Best route </h1>
+                    {% endif %} <br>
+
+                    {# List with properties #}
+                    <ul>
+                        <li>Distance: {{ "%.3f"|format(g['distance']/1000) }} km </li>
+                        <li>Estimated Time: {{ (g['time']/60)|round|int }} minutes </li>
+                        <li>Estimated Consumption: {{ "%.3f"|format(g['consumption']) }} l </li>
+                    </ul>
+                {% endfor %}
+            </div>
+
+            {# List with instructions, loaded and shown only after selecting a route #}
+            <div id="instructions"></div>
+        {% endif %}
+
+    </div>
+
+    <!-- Scripts are loaded -->
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <script>
+        // Function for click is added
+        map.on('click', addMarker);
+
+        {% if graph_routes %}
+            // Map is centered towards the routes
+            map.setView({{ graph_routes[0]['route']['coordinates'][0][::-1] }}, 15);
+
+            L.DomEvent.disableClickPropagation(L.DomUtil.get('details'));
+
+            // Add markers for the points of the request
+            markers[1] = new L.marker({{ graph_routes[0]['route']['coordinates'][0][::-1] }}).addTo(map);
+            markers[2] = new L.marker({{ graph_routes[0]['route']['coordinates'][-1][::-1] }}).addTo(map);
+            markers[2]._icon.classList.add("dest_marker");
+
+            inputs[1].value = String(markers[1].getLatLng().lat) + ',' + String(markers[1].getLatLng().lng);
+            inputs[2].value = String(markers[2].getLatLng().lat) + ',' + String(markers[2].getLatLng().lng);
+
+            // For each route, a Polyline is drawn and the instructions are stored
+            {% for g in graph_routes %}
+                routes.push(L.geoJSON({{ g['route'] }}, { style: { color: "{{ g['color'] }}", weight: 6} }).addTo(map));
+
+                {# A list with instructions is created #}
+                instructions_list[{{ loop.index0 }}] = document.createElement('ol');
+
+                {# Get previous loop index for positioning inside the list #}
+                {% set outer_loop = loop %}
+
+                {# For each instruction, an element is added to the list #}
+                {% for i in g['instructions'] %}
+                    instructions_list[{{ outer_loop.index0 }}].innerHTML += "<li onclick='map.panTo({{ i['point'] }})'> {{ i['instruction'] }} </li>"
+                {% endfor %}
+            {% endfor %}
+        {% else %}
+            // Map is centered towards Cáceres 
+            map.setView([39.470221, -6.3854254], 15);
+        {% endif %}
+    </script>
+</body>
+
 </html>

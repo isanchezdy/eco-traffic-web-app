@@ -1,2 +1,4 @@
 eco-traffic-env/
 **/__pycache__/
+**/cache/
+**/spain-latest.osm.pbf
